@@ -1,10 +1,13 @@
 
 
 
+import 'dart:io';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../providers/api_provider.dart';
 import '../../../providers/file_provider.dart';
 
 class UploadScreen extends ConsumerWidget {
@@ -21,15 +24,18 @@ class UploadScreen extends ConsumerWidget {
           children: [
             ElevatedButton(
               onPressed: () async {
-                final file = await FilePicker.platform.pickFiles(
-                  type: FileType.custom,
-                  allowedExtensions: ['pdf'],
-                );
-                if (file != null) {
-                  ref.read(fileProvider.notifier).state = file.files.first;
+                if (selectedFile != null) {
+                  final file = File(selectedFile.path!);
+                  final apiService = ref.read(apiProvider);
+                  String message = await apiService.uploadResume(file);
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text(message),
+                  )
+                  );
                 }
+
               },
-              child: Text('Select pdf'),
+              child: Text("Upload Resume"),
             ),
             SizedBox(height: 10),
             ElevatedButton(onPressed:() {ref.read(fileProvider.notifier).state=null;},
